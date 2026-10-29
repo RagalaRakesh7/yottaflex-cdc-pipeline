@@ -1,0 +1,4 @@
+Command: python -m pytest -q
+Result: 13 passed in 0.31s
+Scope: CDC engine tests against isolated temporary SQLite databases.
+Note: Rerun tests in the final Windows environment before submission. The Flask UI routes were not runtime-tested in this environment.

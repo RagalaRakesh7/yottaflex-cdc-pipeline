@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#6558e8">
+    <title>{% block title %}Overview{% endblock %} | ChangeStream</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar">
+        <a class="brand" href="{{ url_for('dashboard') }}" aria-label="ChangeStream overview">
+            <span class="brand-logo">C</span>
+            <span>
+                <strong>ChangeStream</strong>
+                <small>CDC CONTROL CENTER</small>
+            </span>
+        </a>
+
+        <p class="nav-label">WORKSPACE</p>
+        <nav class="side-nav" aria-label="Main navigation">
+            <a class="{{ 'active' if active_page == 'dashboard' else '' }}" href="{{ url_for('dashboard') }}"><span aria-hidden="true">▦</span>&nbsp; Overview</a>
+            <a class="{{ 'active' if active_page == 'events' else '' }}" href="{{ url_for('events') }}"><span aria-hidden="true">◷</span>&nbsp; Audit history</a>
+            <a class="{{ 'active' if active_page == 'quarantine' else '' }}" href="{{ url_for('quarantine') }}"><span aria-hidden="true">⚠</span>&nbsp; Data quality</a>
+            <a class="{{ 'active' if active_page == 'runs' else '' }}" href="{{ url_for('runs') }}"><span aria-hidden="true">↗</span>&nbsp; Pipeline runs</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="connection"><span class="dot"></span> Local engine connected</div>
+        </div>
+    </aside>
+
+    <main class="main-area">
+        <header class="topbar">
+            <div class="topbar-heading">
+                <div class="eyebrow">DATA ENGINEERING / OPERATIONS</div>
+                <div class="topbar-title">{% block page_heading %}Overview{% endblock %}</div>
+            </div>
+
+            <div class="topbar-tools">
+                <div class="local-time" aria-label="Local time">
+                    <small>LOCAL TIME</small>
+                    <strong id="local-clock">--:--:--</strong>
+                </div>
+                <form class="global-search" action="{{ url_for('events') }}" method="get" role="search">
+                    <span class="search-symbol" aria-hidden="true">⌕</span>
+                    <input type="search" name="q" value="{{ request.args.get('q', '') }}" placeholder="Search customer or event ID..." aria-label="Search events">
+                    <button type="submit">Search</button>
+                </form>
+                <button class="refresh-link" id="refresh-dashboard" type="button">↻ Refresh</button>
+                <a class="top-profile" href="{{ url_for('dashboard') }}" title="Local operator">
+                    <span class="profile-avatar">DE</span>
+                    <span class="profile-copy"><strong>Data Engineer</strong><small>Local operator</small></span>
+                </a>
+            </div>
+        </header>
+
+        <section class="page-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert {{ 'alert-error' if category == 'error' else 'alert-success' }}" role="status">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </section>
+
+        <footer class="app-footer">
+            <span>ChangeStream CDC · Local environment</span>
+            <span>Audit history enabled · Reconciliation enabled</span>
+        </footer>
+    </main>
+</div>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

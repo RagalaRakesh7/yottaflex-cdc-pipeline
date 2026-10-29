@@ -1,0 +1,74 @@
+ {% extends "base.html" %}
+{% block title %}Event Inspector{% endblock %}
+{% block page_heading %}Audit Event Inspector{% endblock %}
+
+{% block content %}
+<div class="page-intro">
+    <div>
+        <h1>Audit Event Inspector</h1>
+        <p>Inspect an individual event recorded in the immutable audit history.</p>
+    </div>
+    <a class="btn btn-outline" style="width:auto"
+       href="{{ url_for('events') }}">← Back to history</a>
+</div>
+
+<div class="panel content-panel">
+    <div class="section-heading" style="margin-top:0">
+        <div>
+            <h2>Event details</h2>
+            <p>History record #{{ event.history_id }}</p>
+        </div>
+        <span class="run-status run-ok">{{ event.outcome }}</span>
+    </div>
+
+    <div class="reconciliation-grid">
+        <div class="recon-item">
+            <span>Event ID</span>
+            <strong style="font-size:13px">{{ event.event_id }}</strong>
+        </div>
+        <div class="recon-item">
+            <span>Customer ID</span>
+            <strong style="font-size:13px">{{ event.customer_id }}</strong>
+        </div>
+        <div class="recon-item">
+            <span>Operation</span>
+            <strong style="font-size:13px">{{ event.operation }}</strong>
+        </div>
+        <div class="recon-item">
+            <span>Event version</span>
+            <strong>{{ event.event_version }}</strong>
+        </div>
+    </div>
+
+    <div style="margin-top:25px">
+        <h3>Event timestamps and source</h3>
+        <div class="table-scroll">
+            <table>
+                <tbody>
+                    <tr>
+                        <th>Event time</th>
+                        <td>{{ event.event_time }}</td>
+                    </tr>
+                    <tr>
+                        <th>Processed at</th>
+                        <td>{{ event.processed_at }}</td>
+                    </tr>
+                    <tr>
+                        <th>Source file</th>
+                        <td>{{ event.source_file or "Not recorded" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Outcome</th>
+                        <td>{{ event.outcome }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div style="margin-top:25px">
+        <h3>Original event payload</h3>
+        <pre class="event-payload">{{ event.payload_pretty }}</pre>
+    </div>
+</div>
+{% endblock %}

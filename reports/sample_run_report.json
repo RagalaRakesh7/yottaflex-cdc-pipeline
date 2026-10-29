@@ -1,0 +1,22 @@
+{
+  "run_id": "10c19438-45db-4756-af5b-71506d88a004",
+  "source_file": "sample_events.jsonl",
+  "started_at": "2026-10-29T16:07:42.016724+00:00",
+  "status": "SUCCEEDED",
+  "input_count": 8,
+  "accepted_count": 6,
+  "applied_count": 4,
+  "duplicate_count": 1,
+  "stale_count": 1,
+  "rejected_count": 2,
+  "duration_seconds": 0.0028,
+  "reconciliation": {
+    "active_customers": 2,
+    "deleted_tombstones": 1,
+    "history_events": 4,
+    "processed_event_registry": 5,
+    "quarantined_records": 2,
+    "current_state_history_mismatches": 0,
+    "checks_passed": true
+  }
+}

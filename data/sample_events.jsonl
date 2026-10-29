@@ -1,0 +1,9 @@
+
+{"event_id":"evt-001","customer_id":"CUST-001","operation":"INSERT","version":1,"event_time":"2026-10-29T09:00:00Z","name":"Ananya Rao","email":"ananya@example.com","amount":125.50}
+{"event_id":"evt-001","customer_id":"CUST-001","operation":"INSERT","version":1,"event_time":"2026-10-29T09:00:00Z","name":"Ananya Rao","email":"ananya@example.com","amount":125.50}
+{"event_id":"evt-002","customer_id":"CUST-001","operation":"UPDATE","version":2,"event_time":"2026-10-29T09:10:00Z","name":"Ananya Rao","email":"ananya.rao@example.com","amount":145.75}
+{"event_id":"evt-003","customer_id":"CUST-002","operation":"DELETE","version":1,"event_time":"2026-10-29T09:15:00Z"}
+{"event_id":"evt-004","customer_id":"CUST-001","operation":"UPDATE","version":1,"event_time":"2026-10-29T09:05:00Z","name":"Ananya Rao","email":"old@example.com","amount":100.00}
+{"event_id":"evt-005","operation":"INSERT","version":1,"event_time":"2026-10-29T09:20:00Z","name":"Missing ID","email":"missing@example.com","amount":25.00}
+{this is not valid json
+{"event_id":"evt-006","customer_id":"CUST-003","operation":"INSERT","version":1,"event_time":"2026-10-29T09:25:00Z","name":"Kiran Kumar","email":"kiran@example.com","amount":299.99}

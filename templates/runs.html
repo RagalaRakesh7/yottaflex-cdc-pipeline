@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}Pipeline Runs{% endblock %}
+{% block page_heading %}Pipeline Runs{% endblock %}
+
+{% block content %}
+<div class="page-intro">
+    <div>
+        <h1>Pipeline Runs</h1>
+        <p>Review execution history, processing outcomes and performance.</p>
+    </div>
+    <a class="btn btn-outline" style="width:auto"
+       href="{{ url_for('export_runs') }}">Download CSV</a>
+</div>
+
+{% set total_input = runs | sum(attribute='input_count') %}
+{% set total_applied = runs | sum(attribute='applied_count') %}
+{% set total_rejected = runs | sum(attribute='rejected_count') %}
+{% set successful_runs = runs | selectattr('status', 'equalto', 'SUCCEEDED') | list | length %}
+
+<div class="run-kpi-grid">
+    <div class="run-kpi">
+        <div class="run-kpi-top">
+            <span>Total runs shown</span>
+            <span class="run-kpi-icon violet">↗</span>
+        </div>
+        <strong>{{ "{:,}".format(runs|length) }}</strong>
+        <small>Most recent 200 runs</small>
+    </div>
+
+    <div class="run-kpi">
+        <div class="run-kpi-top">
+            <span>Input events</span>
+            <span class="run-kpi-icon blue">↓</span>
+        </div>
+        <strong>{{ "{:,}".format(total_input) }}</strong>
+        <small>Across displayed runs</small>
+    </div>
+
+    <div class="run-kpi">
+        <div class="run-kpi-top">
+            <span>Applied events</span>
+            <span class="run-kpi-icon green">✓</span>
+        </div>
+        <strong>{{ "{:,}".format(total_applied) }}</strong>
+        <small>Successfully applied changes</small>
+    </div>
+
+    <div class="run-kpi">
+        <div class="run-kpi-top">
+            <span>Rejected events</span>
+            <span class="run-kpi-icon orange">!</span>
+        </div>
+        <strong>{{ "{:,}".format(total_rejected) }}</strong>
+        <small>Requires data-quality review</small>
+    </div>
+</div>
+
+<div class="section-heading">
+    <div>
+        <h2>Execution history</h2>
+        <p>Detailed metrics for each CDC execution.</p>
+    </div>
+</div>
+
+<div class="panel table-panel">
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Run ID</th>
+                    <th>Source file</th>
+                    <th>Started</th>
+                    <th>Status</th>
+                    <th>Input</th>
+                    <th>Accepted</th>
+                    <th>Applied</th>
+                    <th>Duplicates</th>
+                    <th>Stale</th>
+                    <th>Rejected</th>
+                    <th>Duration</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for run in runs %}
+                <tr>
+                    <td><code>{{ run.run_id[:8] }}…</code></td>
+                    <td>{{ run.source_file }}</td>
+                    <td>{{ run.started_at }}</td>
+                    <td>
+                        <span class="run-status {{ 'run-ok' if run.status|upper == 'SUCCEEDED' else 'run-fail' }}">
+                            {{ run.status }}
+                        </span>
+                    </td>
+                    <td>{{ "{:,}".format(run.input_count) }}</td>
+                    <td>{{ "{:,}".format(run.accepted_count) }}</td>
+                    <td>{{ "{:,}".format(run.applied_count) }}</td>
+                    <td>{{ "{:,}".format(run.duplicate_count) }}</td>
+                    <td>{{ "{:,}".format(run.stale_count) }}</td>
+                    <td>{{ "{:,}".format(run.rejected_count) }}</td>
+                    <td>{{ "%.2f"|format(run.duration_seconds) }}s</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="11" class="empty-state">
+                        No pipeline runs recorded yet. Run the sample pipeline from the dashboard.
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="section-heading">
+    <div>
+        <h2>Processing performance</h2>
+        <p>Input volume compared with applied and rejected events.</p>
+    </div>
+</div>
+
+<div class="panel content-panel">
+    {% for run in runs[:10] %}
+        <div class="performance-row">
+            <div class="performance-top">
+                <div>
+                    <strong>{{ run.source_file }}</strong>
+                    <small>{{ run.started_at }} · {{ run.status }}</small>
+                </div>
+                <strong>{{ "{:,}".format(run.input_count) }} events</strong>
+            </div>
+
+            {% set applied_pct = (run.applied_count * 100 / run.input_count) if run.input_count else 0 %}
+            {% set rejected_pct = (run.rejected_count * 100 / run.input_count) if run.input_count else 0 %}
+
+            <div class="performance-bar">
+                 <div class="performance-applied"
+                     data-width="{{ [applied_pct, 100]|min }}"></div>
+                 <div class="performance-rejected"
+                     data-width="{{ [rejected_pct, 100 - [applied_pct, 100]|min]|min }}"></div>
+            </div>
+
+            <div class="performance-legend">
+                <span><i class="legend-applied"></i> Applied: {{ run.applied_count }}</span>
+                <span><i class="legend-rejected"></i> Rejected: {{ run.rejected_count }}</span>
+                <span>Duplicates: {{ run.duplicate_count }}</span>
+                <span>Stale: {{ run.stale_count }}</span>
+                <span>Duration: {{ "%.2f"|format(run.duration_seconds) }} sec</span>
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-state">No performance data available yet.</div>
+    {% endfor %}
+</div>
+
+<script>
+    document.querySelectorAll('.performance-bar [data-width]').forEach((bar) => {
+        bar.style.width = `${bar.dataset.width}%`;
+    });
+</script>
+{% endblock %}

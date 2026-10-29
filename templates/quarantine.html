@@ -1,0 +1,106 @@
+
+{% extends "base.html" %}
+{% block title %}Data Quality{% endblock %}
+{% block page_heading %}Data Quality{% endblock %}
+
+{% block content %}
+<div class="page-intro">
+    <div>
+        <div class="eyebrow">DATA QUALITY / VALIDATION</div>
+        <h1>Quarantine center</h1>
+        <p>Inspect malformed events, missing fields, and rejected source records.</p>
+    </div>
+    <span class="status-chip {{ 'status-good' if records|length == 0 else 'status-bad' }}">
+        {{ '● NO RECENT REJECTS' if records|length == 0 else '⚠ REVIEW REQUIRED' }}
+    </span>
+</div>
+
+<div class="quality-grid">
+    <div class="quality-card">
+        <div class="quality-icon red">!</div>
+        <div class="quality-label">Recent quarantined records</div>
+        <div class="quality-number">{{ "{:,}".format(records|length) }}</div>
+        <div class="quality-note">Records returned by the current page</div>
+    </div>
+    <div class="quality-card">
+        <div class="quality-icon purple">⌕</div>
+        <div class="quality-label">Traceability</div>
+        <div class="quality-number">Enabled</div>
+        <div class="quality-note">Source and reason retained when available</div>
+    </div>
+    <div class="quality-card">
+        <div class="quality-icon green">✓</div>
+        <div class="quality-label">Recovery approach</div>
+        <div class="quality-number">Review</div>
+        <div class="quality-note">Correct source data before replaying</div>
+    </div>
+</div>
+
+<div class="section-heading">
+    <div>
+        <h2>Rejected records</h2>
+        <p>Review the reason before deciding whether to correct and replay an event.</p>
+    </div>
+    <a class="text-link" href="{{ url_for('runs') }}">View pipeline runs →</a>
+</div>
+
+<div class="panel content-panel">
+    <div class="table-toolbar">
+        <span>Quarantine ledger</span>
+        <span class="table-toolbar-note">{{ records|length }} records displayed</span>
+    </div>
+
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Record</th>
+                    <th>Source file</th>
+                    <th>Line</th>
+                    <th>Event ID</th>
+                    <th>Validation reason</th>
+                    <th>Raw input</th>
+                    <th>Received at</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for record in records %}
+                <tr>
+                    <td>
+                        <strong class="event-id">#{{ record.quarantine_id }}</strong>
+                        <small class="table-subtext">{{ record.run_id[:8] if record.run_id else 'No run ID' }}</small>
+                    </td>
+                    <td>{{ record.source_file or '—' }}</td>
+                    <td>{{ record.line_number or '—' }}</td>
+                    <td>{{ record.event_id or '—' }}</td>
+                    <td><span class="quality-reason">{{ record.error_reason }}</span></td>
+                    <td>
+                        <details class="payload-details">
+                            <summary>Inspect record</summary>
+                            <pre>{{ record.raw_record }}</pre>
+                        </details>
+                    </td>
+                    <td>{{ record.quarantined_at or '—' }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" class="empty-state">
+                        <div class="empty-icon">✓</div>
+                        <strong>No quarantined records found</strong>
+                        <p>Your current quarantine query returned no rejected records.</p>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="quality-tip">
+    <div class="quality-tip-icon">i</div>
+    <div>
+        <strong>Recommended recovery workflow</strong>
+        <p>Inspect the raw record, correct the source event, validate the required fields and version, then replay the corrected input. Avoid editing audit history directly.</p>
+    </div>
+</div>
+{% endblock %}

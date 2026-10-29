@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}Audit History{% endblock %}
+{% block page_heading %}Audit History{% endblock %}
+
+{% block content %}
+<div class="page-intro">
+    <div>
+        <h1>Audit History</h1>
+        <p>Inspect CDC events recorded in your immutable audit ledger.</p>
+    </div>
+    <a class="btn btn-outline" style="width:auto"
+       href="{{ url_for('export_history') }}">
+        Download CSV
+    </a>
+</div>
+
+<div class="event-summary">
+    <div class="event-summary-icon">↻</div>
+    <div>
+        <strong>{{ "{:,}".format(total) }} audit records found</strong>
+        <span>Search by customer or event ID, filter operations, and inspect event payloads.</span>
+    </div>
+</div>
+
+<div class="panel content-panel">
+    <div class="filter-title">
+        <div>
+            <h3>Filter audit events</h3>
+            <p>Use one or more filters to narrow the results.</p>
+        </div>
+        <a class="reset-link" href="{{ url_for('events') }}">Reset filters</a>
+    </div>
+
+    <form class="event-filter-form" method="get"
+          action="{{ url_for('events') }}">
+        <div class="filter-field">
+            <label for="q">Customer ID or event ID</label>
+            <input id="q" type="search" name="q"
+                   value="{{ q }}"
+                   placeholder="Search identifiers...">
+        </div>
+
+        <div class="filter-field">
+            <label for="operation">Operation</label>
+            <select id="operation" name="operation">
+                <option value="">All operations</option>
+                <option value="INSERT" {{ 'selected' if operation == 'INSERT' else '' }}>INSERT</option>
+                <option value="UPDATE" {{ 'selected' if operation == 'UPDATE' else '' }}>UPDATE</option>
+                <option value="DELETE" {{ 'selected' if operation == 'DELETE' else '' }}>DELETE</option>
+            </select>
+        </div>
+
+        <div class="filter-field">
+            <label for="start_date">From date</label>
+            <input id="start_date" type="date" name="start_date"
+                   value="{{ start_date }}">
+        </div>
+
+        <div class="filter-field">
+            <label for="end_date">To date</label>
+            <input id="end_date" type="date" name="end_date"
+                   value="{{ end_date }}">
+        </div>
+
+        <button class="btn btn-primary filter-submit" type="submit">
+            Apply filters
+        </button>
+    </form>
+
+    <div class="table-toolbar">
+        <span>Event ledger</span>
+        <span class="table-toolbar-note">
+            Page {{ page }} of {{ pages }} · {{ "{:,}".format(total) }} records
+        </span>
+    </div>
+
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Event</th>
+                    <th>Customer</th>
+                    <th>Operation</th>
+                    <th>Version</th>
+                    <th>Event time</th>
+                    <th>Outcome</th>
+                    <th>Payload</th>
+                    <th>Inspect</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for event in events %}
+                <tr>
+                    <td>
+                        <span class="event-id">{{ event.event_id }}</span>
+                        <span class="table-subtext">
+                            History #{{ event.history_id }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="customer-tag">{{ event.customer_id }}</span>
+                    </td>
+                    <td>
+                        <span class="operation-tag operation-{{ event.operation|lower }}">
+                            {{ event.operation }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="version-tag">v{{ event.event_version }}</span>
+                    </td>
+                    <td>{{ event.event_time }}</td>
+                    <td>
+                        <span class="run-status {{ 'run-ok' if event.outcome|upper in ['APPLIED', 'SUCCESS', 'SUCCEEDED'] else 'run-fail' }}">
+                            {{ event.outcome }}
+                        </span>
+                    </td>
+                    <td>
+                        <details class="payload-details">
+                            <summary>View payload</summary>
+                            <pre>{{ event.payload_json }}</pre>
+                        </details>
+                    </td>
+                    <td>
+                        <a class="text-link"
+                           href="{{ url_for('event_detail', history_id=event.history_id) }}">
+                            Inspect →
+                        </a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="8" class="empty-state">
+                        <div class="empty-icon">⌕</div>
+                        <strong>No audit events found</strong>
+                        <p>Try changing your search or clearing the filters.</p>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination-footer">
+        <span>
+            Showing
+            {% if total == 0 %}0{% else %}{{ (page - 1) * 50 + 1 }}{% endif %}
+            to {{ [page * 50, total]|min }}
+            of {{ "{:,}".format(total) }} records
+        </span>
+
+        <div class="pagination">
+            {% if page > 1 %}
+                <a href="{{ url_for('events', page=page-1, q=q, operation=operation, start_date=start_date, end_date=end_date) }}">
+                    ← Previous
+                </a>
+            {% else %}
+                <span class="disabled">← Previous</span>
+            {% endif %}
+
+            {% if page < pages %}
+                <a href="{{ url_for('events', page=page+1, q=q, operation=operation, start_date=start_date, end_date=end_date) }}">
+                    Next →
+                </a>
+            {% else %}
+                <span class="disabled">Next →</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
